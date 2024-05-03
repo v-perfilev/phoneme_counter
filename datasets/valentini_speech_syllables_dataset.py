@@ -1,7 +1,7 @@
 from torch.utils.data import Dataset
 
 
-class SpeechPhonemesDataset(Dataset):
+class ValentiniSpeechSyllablesDataset(Dataset):
     data = []
 
     def __init__(self):
