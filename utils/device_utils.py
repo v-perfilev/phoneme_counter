@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import default_collate
+from torch.nn.utils.rnn import pad_sequence
 
 
 def device_collate_fn(batch, use_cuda=False, use_mps=False):
@@ -11,14 +11,19 @@ def device_collate_fn(batch, use_cuda=False, use_mps=False):
     else:
         device = torch.device("cpu")
 
-    # Collate the batch using the default collate function from PyTorch
-    batch = default_collate(batch)
+    # Prepare spectrograms and syllable counts
+    spectrograms, syllable_counts = zip(*batch)
+    spectrograms = [s.squeeze(0).permute(1, 0) for s in spectrograms]
+    spectrograms = pad_sequence(spectrograms, batch_first=True)
+    syllable_counts = torch.tensor(syllable_counts)
 
-    # Move each tensor in the batch to the selected device and convert to float32
-    batch = [x.to(device).to(torch.float32) for x in batch]
+    # Move spectrogram tensor in the batch to the selected device and convert to float32
+    spectrograms = [x.to(device).to(torch.float32) for x in spectrograms]
 
-    # Return the processed batch
-    return batch
+    # Move syllable count tensor in the batch to the selected device and convert to float32
+    syllable_counts = [x.to(device).to(torch.float32) for x in syllable_counts]
+
+    return spectrograms, syllable_counts
 
 
 def to_device_fn(obj, use_cuda=False, use_mps=False):
@@ -32,12 +37,3 @@ def to_device_fn(obj, use_cuda=False, use_mps=False):
 
     # Move the object to the selected device and to float32 data type
     return obj.to(device).to(torch.float32)
-
-
-def to_cpu_fn(obj, use_mps=False):
-    if use_mps and obj.device.type == "mps":
-        # Explicitly move to CPU
-        return obj.to("cpu")
-    else:
-        # Return the tensor unchanged
-        return obj
