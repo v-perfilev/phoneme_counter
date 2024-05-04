@@ -18,10 +18,10 @@ def device_collate_fn(batch, use_cuda=False, use_mps=False):
     syllable_counts = torch.tensor(syllable_counts)
 
     # Move spectrogram tensor in the batch to the selected device and convert to float32
-    spectrograms = [x.to(device).to(torch.float32) for x in spectrograms]
+    spectrograms = spectrograms.to(device).to(torch.float32)
 
     # Move syllable count tensor in the batch to the selected device and convert to float32
-    syllable_counts = [x.to(device).to(torch.float32) for x in syllable_counts]
+    syllable_counts = syllable_counts.to(device).to(torch.float32)
 
     return spectrograms, syllable_counts
 
